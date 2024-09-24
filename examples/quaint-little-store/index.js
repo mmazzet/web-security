@@ -24,7 +24,8 @@ app.use(async (req, res, next) => {
 
   if (session) {
     res.locals.user = await db.get(
-      `SELECT * FROM users INNER JOIN sessions ON users.id = sessions.userId WHERE sessions.sessionId = '${session}'`
+      `SELECT * FROM users INNER JOIN sessions ON users.id = sessions.userId WHERE sessions.sessionId = ?`,
+      [session]
     );
   }
 
@@ -47,14 +48,16 @@ app.post('/login', async (req, res) => {
   const password = req.body.password;
 
   const user = await db.get(
-    `SELECT * FROM users WHERE email = '${email}' AND password = '${password}'`
+    `SELECT * FROM users WHERE email = ? AND password = ?`,
+    [email, password]
   );
 
   if (user) {
     const sessionId = crypto.randomBytes(16).toString('hex');
 
     await db.exec(
-      `INSERT INTO sessions (sessionId, userId) VALUES ('${sessionId}', ${user.id})`
+      `INSERT INTO sessions (sessionId, userId) VALUES ('${sessionId}', ${user.id})`,
+      
     );
 
     res.cookie('session', sessionId, {
