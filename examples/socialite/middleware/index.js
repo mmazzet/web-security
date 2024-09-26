@@ -1,4 +1,5 @@
 import { db } from '../database.js';
+import {getSession} from '../index.js';
 
 /**
  * @param {import('express').Request} req
@@ -7,6 +8,11 @@ import { db } from '../database.js';
  */
 export const currentUser = async (req, res, next) => {
   const sessionId = req.cookies.sessionId;
+  /**
+   * @type {{sessionId: string, userId: string, token: string}}
+   */
+  const session = await getSession(sessionId);
+  console.log("session:", session);
 
   if (!sessionId) {
     return next();
@@ -20,6 +26,9 @@ export const currentUser = async (req, res, next) => {
   if (user) {
     req.user = user;
     res.locals.user = user;
+    res.locals.token = session.token;
+
+    console.log("User:", user.username)
   }
 
   next();

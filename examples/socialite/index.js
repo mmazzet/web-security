@@ -1,4 +1,5 @@
 import { startServer, createServer } from '#shared';
+import { v4 as uuid } from "uuid";
 
 import { db } from './database.js';
 
@@ -11,10 +12,34 @@ import {
 
 import { userExists, updateUser } from './utilities/index.js';
 
+//const {token} = await db.get("SELECT token FROM sessions WHERE userId = ?", user.id);
+
 const app = createServer({ viewEngine: 'handlebars' });
 
 app.use(currentUser);
 app.use(methodOverride);
+
+/** 
+ * @param {string} userId
+ */
+export const createSession = (userId) => {
+  const sessionId = uuid();
+  const token = uuid();
+
+  db.run("INSERT INTO sessions (sessionId, userID, token) VALUES (?, ?, ?)", [
+    sessionId,
+    userId,
+    token,
+  ]);
+  return sessionId;
+};
+
+/** 
+ * @param {string} sessionId
+ */
+export const getSession = (sessionId) => {
+  return db.get("SELECT * FROM sessions WHERE sessionId = ?", [sessionId]);
+}
 
 app.get('/', async (req, res) => {
   const limit = req.query.limit || 50;
@@ -54,7 +79,8 @@ app.post('/login', async (req, res) => {
       .render('login', { error: 'Invalid login credentials.' });
   }
 
-  res.cookie('sessionId', user.id);
+  const sessionId = createSession(user.id);
+  res.cookie('sessionId', sessionId);
   res.redirect('/');
 });
 
