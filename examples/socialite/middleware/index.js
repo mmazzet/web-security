@@ -21,7 +21,7 @@ export const currentUser = async (req, res, next) => {
   /**
    * @type {import('../database.js').User | undefined}
    */
-  const user = await db.get('SELECT * FROM users WHERE id = ?', [sessionId]);
+  const user = await db.get('SELECT * FROM users WHERE id = ?', [sessionId.userId]);
 
   if (user) {
     req.user = user;

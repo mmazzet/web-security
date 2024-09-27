@@ -12,8 +12,6 @@ import {
 
 import { userExists, updateUser } from './utilities/index.js';
 
-//const {token} = await db.get("SELECT token FROM sessions WHERE userId = ?", user.id);
-
 const app = createServer({ viewEngine: 'handlebars' });
 
 app.use(currentUser);
@@ -26,7 +24,7 @@ export const createSession = (userId) => {
   const sessionId = uuid();
   const token = uuid();
 
-  db.run("INSERT INTO sessions (sessionId, userID, token) VALUES (?, ?, ?)", [
+  db.run("INSERT INTO sessions (sessionId, userId, token) VALUES (?, ?, ?)", [
     sessionId,
     userId,
     token,
@@ -162,7 +160,11 @@ app.get('/posts', async (req, res) => {
 
 // Create post
 app.post('/posts', authenticate, async (req, res) => {
-  const { content } = req.body;
+  const { content, _csrf } = req.body;
+
+  if (_csrf !== res.locals.token) {
+   return res.status(403).send({error: "unauthorised"});
+  };
 
   const { lastID } = await db.run(
     'INSERT INTO posts (userId, content) VALUES (?, ?)',

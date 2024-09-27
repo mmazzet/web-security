@@ -36,7 +36,7 @@ await db.run(`CREATE TABLE IF NOT EXISTS posts (
     )`);
 
 await db.run(
-    "CREATE TABLE IF NOT EXISTS sessions (sessionId TEXT PRIMARY KEY, userId INTEGER, token TEXT"
+    "CREATE TABLE IF NOT EXISTS sessions (sessionId TEXT PRIMARY KEY, userId INTEGER, token TEXT)"
 );
 
 export { db };
