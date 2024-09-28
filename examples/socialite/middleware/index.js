@@ -8,20 +8,23 @@ import {getSession} from '../index.js';
  */
 export const currentUser = async (req, res, next) => {
   const sessionId = req.cookies.sessionId;
-  /**
-   * @type {{sessionId: string, userId: string, token: string}}
-   */
-  const session = await getSession(sessionId);
-  console.log("session:", session);
-
   if (!sessionId) {
     return next();
   }
 
   /**
+   * @type {{sessionId: string, userId: string, token: string}}
+   */
+  const session = await getSession(sessionId);
+  console.log("session:", session);
+  if (!session) {
+    return next(); // No session found, proceed without setting user
+  }
+ 
+  /**
    * @type {import('../database.js').User | undefined}
    */
-  const user = await db.get('SELECT * FROM users WHERE id = ?', [sessionId.userId]);
+  const user = await db.get('SELECT * FROM users WHERE id = ?', [session.userId]);
 
   if (user) {
     req.user = user;
